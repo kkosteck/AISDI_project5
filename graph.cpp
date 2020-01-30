@@ -34,8 +34,8 @@ public:
         int temp = adjustment - vertices;
         switch (temp) {
             case 1:  return 1;
-            case -1: return 0;
-            case X:  return 0;
+            case -1: return -1;
+            case X:  return -1;
             case -X: return 1;
             default: return 0;
         }
@@ -55,7 +55,7 @@ public:
 			openSet.erase(openSet.begin());
 
 			for(auto it : nodeEdges[current]) {
-				int weight = it.second + heuristicValue(it.first, endIndex);
+				int weight = it.second + heuristicValue(it.first, current);
 				if(distance[it.first] > distance[current] + weight) {
 					if(distance[it.first] != INFINITY)
 						openSet.erase(openSet.find(make_pair(distance[it.first], it.first)));
