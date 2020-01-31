@@ -30,15 +30,24 @@ public:
 		}
 	}
 
-    int heuristicValue(int adjustment, int vertices) {
+    int heuristicValue(int adjustment, int vertices, int start, int end) { 
         int temp = adjustment - vertices;
-        switch (temp) {
-            case 1:  return 1; //jesli idziemy w prawo
-            case -1: return -1; //w lewo
-            case X:  return -1; //w dol
-            case -X: return 1; //w gore
-            default: return 0;
-        }
+        if(end - start > 0)
+			switch (temp) { //faworyzowanie ruchow w lewo i w dol
+				case 1:  return 1; //w prawo
+				case -1: return -1; //w lewo
+				case X:  return -1; //w dol
+				case -X: return 1; //w gore
+				default: return 0;
+			}
+		else
+			switch (temp) { //faworyzowanie ruchow w gore i w prawo
+				case 1:  return -1;
+				case -1: return 1;
+				case X:  return 1;
+				case -X: return -1;
+				default: return 0;
+			}
     }
 
 	vector<int> findPath(int startIndex, int endIndex) {
@@ -57,7 +66,7 @@ public:
 				break;
 
 			for(auto it : nodeEdges[current]) { //sprawdzamy wszystkie krawedzie obecnego wierzcholka
-				int weight = it.second + heuristicValue(it.first, current); //waga wierzcholka (waga pola + heurystyka)
+				int weight = it.second + heuristicValue(it.first, current, startIndex, endIndex); //waga wierzcholka (waga pola + heurystyka)
 				if(distance[it.first] > distance[current] + weight) { //sprawdzamy czy mamy mniejsza wartosc (jesli wierzcholek wczesniej nie sprawdzany to ma wartosc INFINITY czyli na pewno go sprawdzimy)
 					if(distance[it.first] != INFINITY)
 						openSet.erase(openSet.find(make_pair(distance[it.first], it.first)));
