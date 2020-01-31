@@ -4,19 +4,19 @@
 #include <set>
 using namespace std;
 
-#define X 7
-#define Y 7
+#define X 7 //szerokosc planszy
+#define Y 7 //wysokosc planszy
 #define INFINITY 999999999
 #define INPUT_FILE "graph.txt"
 
 class Graph{
 private:
-	vector<pair<int, int>> nodeEdges[X * Y];
+	vector<pair<int, int>> nodeEdges[X * Y]; //tablica przechowująca dane krawędzi (indeks, waga) dla każdego wierzchołka (pola)
 
 public:
 	Graph(int array[X][Y]) {
 		for(int i = 0; i < Y; ++i){
-			for(int j = 0; j < X; ++j) {
+			for(int j = 0; j < X; ++j) { //przypisanie wag oraz indeksów każdej krawędzi danego wierzchołka
 				int index = Y * i + j;
 				if(i + 1 < Y)
 					nodeEdges[index].push_back(make_pair(index + Y, array[j][i + 1]));
@@ -33,35 +33,37 @@ public:
     int heuristicValue(int adjustment, int vertices) {
         int temp = adjustment - vertices;
         switch (temp) {
-            case 1:  return 1;
-            case -1: return -1;
-            case X:  return -1;
-            case -X: return 1;
+            case 1:  return 1; //jesli idziemy w prawo
+            case -1: return -1; //w lewo
+            case X:  return -1; //w dol
+            case -X: return 1; //w gore
             default: return 0;
         }
     }
 
 	vector<int> findPath(int startIndex, int endIndex) {
-		vector<int> distance(X * Y, INFINITY);
-		set<pair<int, int>> openSet;
-		vector<int> theBestPath(X * Y, -1);
+		vector<int> distance(X * Y, INFINITY); //wektor przechowujacy wartosc f
+		set<pair<int, int>> openSet; //kontener przechowujacy oczekujace na sprawdzenie wierzcholki (distance, index)
+		vector<int> theBestPath(X * Y, -1); //wektor przechowujacy numer indeksu poprzedniego pola w sciezce 
 
-		distance[startIndex] = 0;
+		distance[startIndex] = 0; //punkt poczatkowy ma wartosc f=0
 		theBestPath[startIndex] = startIndex;
 		openSet.insert(make_pair(0, startIndex));
 
-		while(!openSet.empty()) {
+		while(!openSet.empty()) { //sprawdzamy kolejne wierzcholki poki jest co sprawdzac
 			int current = openSet.begin()->second;
 			openSet.erase(openSet.begin());
+			if(current == endIndex) //przerywamy jesli dotarlismy do mety
+				break;
 
-			for(auto it : nodeEdges[current]) {
-				int weight = it.second + heuristicValue(it.first, current);
-				if(distance[it.first] > distance[current] + weight) {
+			for(auto it : nodeEdges[current]) { //sprawdzamy wszystkie krawedzie obecnego wierzcholka
+				int weight = it.second + heuristicValue(it.first, current); //waga wierzcholka (waga pola + heurystyka)
+				if(distance[it.first] > distance[current] + weight) { //sprawdzamy czy mamy mniejsza wartosc (jesli wierzcholek wczesniej nie sprawdzany to ma wartosc INFINITY czyli na pewno go sprawdzimy)
 					if(distance[it.first] != INFINITY)
 						openSet.erase(openSet.find(make_pair(distance[it.first], it.first)));
-					distance[it.first] = distance[current] + weight;
-					theBestPath[it.first] = current;
-					openSet.insert(make_pair(distance[it.first], it.first));
+					distance[it.first] = distance[current] + weight; //zmieniamy wartosc f
+					theBestPath[it.first] = current; //dodajemy go do sciezki
+					openSet.insert(make_pair(distance[it.first], it.first)); //aktualizujemy jego wartosc w wierzcholkach do sprawdzenia
 				}
 			}
 		}
@@ -71,7 +73,7 @@ public:
             int index = endIndex;
             path.push_back(endIndex);
 
-            while (index != startIndex) {
+            while (index != startIndex) { //przechodzimy przez sciezke
                 index = theBestPath[index];
                 path.push_back(index);
             }
